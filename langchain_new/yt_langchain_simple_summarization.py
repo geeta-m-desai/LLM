@@ -50,10 +50,16 @@ from langchain.chains.constitutional_ai.models import ConstitutionalPrinciple
 
 ethical_principle = ConstitutionalPrinciple(
     name="Ethical Principle",
-    critique_request="The model should only talk about rephrasing input  ethical and legal things.",
-    revision_request="Rewrite the model's input to be both ethical and legal.",
+    critique_request="The model should only talk about  ethical and legal things.",
+    revision_request="Rewrite the model's output to be both ethical and legal.",
 )
-
+postprocess_styling="Ada Lovelace"
+styling_principal = ConstitutionalPrinciple(
+                name=f'{postprocess_styling} Principle',
+                critique_request=f'Identify specific ways in which the model\'s response is not in the style of {postprocess_styling}.',
+                revision_request=f'Please rewrite the model response to be in the style of {postprocess_styling}.',
+            )
+constitutional_principles = [ethical_principle, styling_principal]
 constitutional_chain = ConstitutionalChain.from_llm(
     chain=evil_qa_chain,
     constitutional_principles=[ethical_principle],
@@ -63,7 +69,7 @@ constitutional_chain = ConstitutionalChain.from_llm(
 
 constitutional_chain = ConstitutionalChain.from_llm(
     chain=evil_qa_chain,
-    constitutional_principles=[ethical_principle],
+    constitutional_principles=constitutional_principles,
     llm=llm,
     verbose=True,
 )
