@@ -9,7 +9,7 @@ from langchain_new.tools import tools
 
 # Define your embedding model
 embeddings_model = OpenAIEmbeddings()
-
+os.environ["OPENAI_API_KEY"] = ""
 # Initialize the vectorstore as empty
 import faiss
 
