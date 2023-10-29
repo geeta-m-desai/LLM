@@ -4,6 +4,7 @@ from langchain.chains.summarize import load_summarize_chain
 from langchain.embeddings import OpenAIEmbeddings
 
 from dotenv import load_dotenv
+from sentence_transformers import CrossEncoder
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -13,7 +14,6 @@ from langchain.chains import LLMChain
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.prompts import PromptTemplate
 from langchain.document_loaders import TextLoader
-from langchain.indexes import VectorstoreIndexCreator
 from langchain.chains.constitutional_ai.base import ConstitutionalChain
 from langchain.chains.constitutional_ai.models import ConstitutionalPrinciple
 
@@ -27,28 +27,20 @@ text_splitter = CharacterTextSplitter()
 textloader = TextLoader("xxx.txt")
 docs1 = textloader.load_and_split(text_splitter)
 embeddings = OpenAIEmbeddings()
+sumchain = load_summarize_chain(llm, chain_type='stuff')
+sumtext1 = sumchain.run(docs1)
+print("sumtext1 ...", sumtext1, "\n")
 
-index = VectorstoreIndexCreator().from_loaders([textloader])
-
-# sumtext = (index.query(
-#     "Summarize the general content of this document.",
-#     retriever_kwargs={"search_kwargs": {"filter": {"source": "xxx.txt"}}}
-# ))
-# print("sumtext ....", sumtext)
-sumchan = load_summarize_chain(llm, chain_type='stuff')
-sumtext1 = sumchan.run(docs1)
-print("sumtext1 ...", sumtext1)
-
-evil_qa_prompt = PromptTemplate(
+qa_prompt = PromptTemplate(
     template="""You are legal advisor. Rephrase input for legal policies.
 
 Question: {question}
 
-Evil answer:""",
+QA answer:""",
     input_variables=["question"],
 )
 
-evil_qa_chain = LLMChain(llm=llm, prompt=evil_qa_prompt)
+qa_chain = LLMChain(llm=llm, prompt=qa_prompt)
 
 ethical_principle = ConstitutionalPrinciple(
     name="Ethical Principle",
@@ -60,12 +52,28 @@ ethical_principle = ConstitutionalPrinciple(
 
 constitutional_principles = [ethical_principle]
 constitutional_chain = ConstitutionalChain.from_llm(
-    chain=evil_qa_chain,
+    chain=qa_chain,
     constitutional_principles=constitutional_principles,
     llm=llm,
-    verbose=True,
+    verbose=False,
     return_intermediate_steps=True,
 
 )
-print(constitutional_chain({"question:", sumtext1}))
-print(constitutional_chain({"question:", "How To Steal Kitten?"}))
+cai_response = constitutional_chain({"question:", sumtext1})
+print("initial_response", cai_response['initial_output'],"\n")
+print("critique", cai_response['critiques_and_revisions'], "\n")
+print("output", cai_response['output'], "\n")
+# print(constitutional_chain({"question:", "How To Steal Kitten?"}))
+model = CrossEncoder('cross-encoder/stsb-distilroberta-base')
+sentence_combinations= [cai_response['initial_output'],cai_response['output']]
+similarity_scores = model.predict(sentence_combinations)
+print(similarity_scores)
+from sentence_transformers import SentenceTransformer, util
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+#Sentences are encoded by calling model.encode()
+emb1 = model.encode(sentence_combinations)
+
+
+cos_sim = util.cos_sim(emb1[0],emb1[1])
+print("Cosine-Similarity:", cos_sim.numpy()[0][0])
