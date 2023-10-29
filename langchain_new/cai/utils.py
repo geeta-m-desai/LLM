@@ -36,10 +36,8 @@ def get_cai_response(llm, sum_text):
 
     ethical_principle = ConstitutionalPrinciple(
         name="Ethical Principle",
-        critique_request="Identify specific ways in which the model's input is harmful, unethical, racist, sexist, toxic, dangerous, or illegal."
-                         "Do not add any more content."
-                         "Provide only factual answers.",
-        revision_request="If critique needed. Please rewrite the response to remove any and all harmful, unethical, racist, sexist, toxic, dangerous, or illegal content.",
+        critique_request="The model should only talk about rephrasing input  ethical and legal things.",
+        revision_request="Rewrite the model's input to be both ethical and legal.",
     )
 
     constitutional_principles = [ethical_principle]
@@ -47,7 +45,7 @@ def get_cai_response(llm, sum_text):
         chain=qa_chain,
         constitutional_principles=constitutional_principles,
         llm=llm,
-        verbose=False,
+        verbose=True,
         return_intermediate_steps=True,
 
     )
@@ -68,7 +66,11 @@ def compare_sts_cos_cai_results(sum_text, cai_response):
     print("sts_score_output", sts_score_output[0])
     print("cos_sim_score_output", cos_sim_score_output)
     scores_arr = np.array([sts_score_input[0], cos_sim_score_input, sts_score_output[0], cos_sim_score_output])
-    if np.all(scores_arr > 0.7, axis=0) > 0.8:
-        return True
+    if cos_sim_eval(cai_response['critiques_and_revisions'][0][0], "No critique needed.") > 0.9 and sts_eval(
+            cai_response['critiques_and_revisions'][0][0], "No critique needed."):
+        return sum_text
     else:
-        return False
+        if np.all(scores_arr > 0.7, axis=0) > 0.8:
+            return cai_response['output']
+        else:
+            return "Unexpected context generated. Please verify with human feedback"
