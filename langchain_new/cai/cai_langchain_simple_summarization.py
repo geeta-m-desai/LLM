@@ -7,7 +7,7 @@ from langchain.llms import OpenAI
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_results
+from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_results, write_file
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -26,7 +26,9 @@ def run_llm_sum_cai(text):
     sum_text = sum_chain.run(docs1)
     print("sum text ...", sum_text, "\n")
     cai_response = get_cai_response(llm, sum_text)
-    return compare_sts_cos_cai_results(sum_text, cai_response)
+    final_cai_outcome = compare_sts_cos_cai_results(sum_text, cai_response)
+    write_file(texts, sum_text, final_cai_outcome)
+    # return compare_sts_cos_cai_results(sum_text, cai_response)
 
 
 if __name__ == "__main__":
@@ -36,5 +38,4 @@ if __name__ == "__main__":
     valid_dataset = dataset.data['valid']
     docs = train_dataset[0][1]
     docs = docs.as_py()
-    # docs = "How To Steal Kitten?"
-    print("Final outcome ", run_llm_sum_cai(docs))
+    run_llm_sum_cai(docs)

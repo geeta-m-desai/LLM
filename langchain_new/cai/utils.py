@@ -74,3 +74,16 @@ def compare_sts_cos_cai_results(sum_text, cai_response):
             return cai_response['output']
         else:
             return "Unexpected context generated. Please verify with human feedback"
+
+
+def write_file(orig_text, sum_text, cai_text):
+    orig_text_new = orig_text[0].replace('\n', '\\n')
+    sum_text_new = sum_text.replace('\n', '\\n')
+    cai_text_new = cai_text.replace('\n', '\\n')
+    filename = 'cai_output.csv'
+    with open(filename, 'w') as file:
+        file.write('orig_text' + ', ' + 'sum_text' + ', ' + 'cai_sum_text')
+        file.write('\n')
+        file.write(str(orig_text_new) + ', ' + str(sum_text_new) +
+                   ', ' + str(cai_text_new) )
+        file.write('\n')
