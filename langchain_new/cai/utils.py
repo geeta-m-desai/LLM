@@ -25,7 +25,7 @@ def cos_sim_eval(sent1: str, sent2: str):
 
 def get_cai_response(llm, sum_text):
     qa_prompt = PromptTemplate(
-        template="""You are legal advisor. Rephrase input for legal policies.
+        template="""You are advisor. Provide response based on context.
 
     Question: {question}
 
@@ -37,8 +37,8 @@ def get_cai_response(llm, sum_text):
 
     ethical_principle = ConstitutionalPrinciple(
         name="Ethical Principle",
-        critique_request="The model should only talk about rephrasing input  ethical and legal things.",
-        revision_request="Rewrite the model's input to be both ethical and legal.",
+        critique_request="The model should only talk about ethical things. Mark Critique needed as Yes if input is not ethical",
+        revision_request="If critique is needed then Rewrite the model's input to be both ethical. Do not add any explanation. Provide only facts.",
     )
 
     constitutional_principles = [ethical_principle]
