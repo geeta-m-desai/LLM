@@ -76,12 +76,52 @@ def compare_sts_cos_cai_results(sum_text, cai_response):
         else:
             return "Unexpected context generated. Please verify with human feedback"
 
+
+def compare_sts_cos_cai_rag_results(orig_text, query, result_text, cai_response, type):
+    sts_score_input = sts_eval(result_text, cai_response['output'])
+    cos_sim_score_input = cos_sim_eval(result_text, cai_response['output'])
+    print("sts_score_input", sts_score_input[0])
+    print("cos_sim_score_input", cos_sim_score_input)
+    sts_score_output = sts_eval(cai_response['initial_output'], cai_response['output'])
+    cos_sim_score_output = cos_sim_eval(cai_response['initial_output'], cai_response['output'])
+    print("sts_score_output", sts_score_output[0])
+    print("cos_sim_score_output", cos_sim_score_output)
+    scores_arr = np.array([sts_score_input[0], cos_sim_score_input, sts_score_output[0], cos_sim_score_output])
+    if cos_sim_eval(cai_response['critiques_and_revisions'][0][0], "No critique needed.") > 0.9 and sts_eval(
+            cai_response['critiques_and_revisions'][0][0], "No critique needed."):
+        cai_text = result_text
+    else:
+        if np.all(scores_arr > 0.7, axis=0) > 0.8:
+            cai_text = cai_response['output']
+        else:
+            cai_text = "Unexpected context generated. Please verify with human feedback"
+    write_file_rag_results(orig_text, query, result_text, cai_text, sts_score_input[0], cos_sim_score_input,
+                           sts_score_output[0], cos_sim_score_output,type)
+
+
 def write_file(orig_text, sum_text, cai_text):
     data = [
         ['orig_text', 'sum_text', 'cai_sum_text'],
         [orig_text, sum_text, cai_text]
     ]
     file_name = 'output.csv'
+    with open(file_name, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(data)
+        print("file Created")
+
+
+def write_file_rag_results(orig_text, query, qa_result_text, cai_text, sts_score_input, cos_sim_score_input,
+                           sts_score_output,
+                           cos_sim_score_output,type):
+    data = [
+        ['orig_text', 'query', 'qa_result_text', 'cai_sum_text', 'sts_score_input', 'cos_sim_score_input',
+         'sts_score_output',
+         'cos_sim_score_output'],
+        [orig_text, query, qa_result_text, cai_text, sts_score_input, cos_sim_score_input, sts_score_output,
+         cos_sim_score_output]
+    ]
+    file_name = 'rag_output_'+type+'.csv'
     with open(file_name, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(data)
