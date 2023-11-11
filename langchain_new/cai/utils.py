@@ -1,10 +1,12 @@
+import csv
+
+import evaluate
 import numpy as np
 from langchain.chains import ConstitutionalChain, LLMChain
 from langchain.chains.constitutional_ai.models import ConstitutionalPrinciple
 from langchain.prompts import PromptTemplate
-from sentence_transformers import SentenceTransformer, util
 from sentence_transformers import CrossEncoder
-import csv
+from sentence_transformers import SentenceTransformer, util
 
 
 def sts_eval(sent1: str, sent2: str):
@@ -96,7 +98,7 @@ def compare_sts_cos_cai_rag_results(orig_text, query, result_text, cai_response,
         else:
             cai_text = "Unexpected context generated. Please verify with human feedback"
     write_file_rag_results(orig_text, query, result_text, cai_text, sts_score_input[0], cos_sim_score_input,
-                           sts_score_output[0], cos_sim_score_output,type)
+                           sts_score_output[0], cos_sim_score_output, type)
 
 
 def write_file(orig_text, sum_text, cai_text):
@@ -113,7 +115,7 @@ def write_file(orig_text, sum_text, cai_text):
 
 def write_file_rag_results(orig_text, query, qa_result_text, cai_text, sts_score_input, cos_sim_score_input,
                            sts_score_output,
-                           cos_sim_score_output,type):
+                           cos_sim_score_output, type):
     data = [
         ['orig_text', 'query', 'qa_result_text', 'cai_sum_text', 'sts_score_input', 'cos_sim_score_input',
          'sts_score_output',
@@ -121,8 +123,39 @@ def write_file_rag_results(orig_text, query, qa_result_text, cai_text, sts_score
         [orig_text, query, qa_result_text, cai_text, sts_score_input, cos_sim_score_input, sts_score_output,
          cos_sim_score_output]
     ]
-    file_name = 'rag_output_'+type+'.csv'
+    file_name = 'rag_output_' + type + '.csv'
     with open(file_name, mode='w', newline='') as file:
         writer = csv.writer(file)
         writer.writerows(data)
         print("file Created")
+
+
+# Recall based and compares N gram overlap with reference
+def calculate_rouge_score(input_predictions, input_references):
+    rouge = evaluate.load('rouge')
+    results = rouge.compute(predictions=input_predictions,
+                            references=input_references)
+    return results
+
+
+# BLEU compares overlap in tokens from the predictions and references, instead of comparing meaning. This can lead to discrepancies between BLEU scores and human ratings.Shorter predicted translations achieve higher scores than longer ones, simply due to how the score is calculated. A brevity penalty is introduced to attempt to counteract this.
+def calculate_blue_score(input_predictions, input_references):
+    rouge = evaluate.load('bleu')
+    results = rouge.compute(predictions=input_predictions,
+                            references=input_references)
+    return results
+
+
+# BERTScore leverages the pre-trained contextual embeddings from BERT and matches words in candidate and reference sentences by cosine similarity. It has been shown to correlate with human judgment on sentence-level and system-level evaluation. Moreover, BERTScore computes precision, recall, and F1 measure, which can be useful for evaluating different language generation tasks.
+def calculate_bert_score(input_predictions, input_references):
+    bertscore = evaluate.load("bertscore")
+    results = bertscore.compute(predictions=input_predictions, references=input_references, lang="en")
+    return results
+
+
+if __name__ == "__main__":
+    predictions = ["hello there", "general kenobi"]
+    references = ["hello there", "general kenobi"]
+    print(calculate_rouge_score(predictions, references))
+    print(calculate_blue_score(predictions, references))
+    print(calculate_bert_score(predictions, references))
