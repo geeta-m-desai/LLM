@@ -7,6 +7,8 @@ from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores.pinecone import Pinecone
 
+from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_rag_results
+
 """## Load multiple and process documents"""
 import os
 from dotenv import load_dotenv
@@ -50,58 +52,12 @@ def tiktoken_len(text):
     return len(tokens)
 
 
-def run_llm_rag_cai(text, user_query):
-    # splitting the text into
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200, length_function=tiktoken_len, )
-    texts = text_splitter.split_text(text)
-    docs1 = [Document(page_content=t) for t in texts[:4]]
-    embedding = OpenAIEmbeddings()
-    res = embedding.embed_documents(texts)
-    len(res), len(res[0])
-    create_index(res)
-
-
-def create_vector_store(data):
-    from uuid import uuid4
-    index_name = 'langchain-retrieval-augmentation'
-    embedding = OpenAIEmbeddings()
-    if index_name not in pinecone.list_indexes():
-        # we create a new index
-        pinecone.create_index(
-            name=index_name,
-            metric='cosine',
-            dimension=1536  # 1536 dim of text-embedding-ada-002
-        )
-    index = pinecone.GRPCIndex(index_name)
-    index.describe_index_stats()
-    batch_limit = 100
-
-    texts = []
-    metadatas = []
-
-    for i, record in enumerate(data):
-        # first get metadata fields for this record
-
-        metadata = {
-            'id': "text_id"
-
-        }
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200,
-                                                       length_function=tiktoken_len, )
-        texts = text_splitter.split_text(data)
-        # create individual metadata dicts for each chunk
-        docs1 = [Document(page_content=t) for t in texts[:4]]
-        record_metadatas = [{
-            "chunk": j, "text": text, **metadata
-        } for j, text in enumerate(texts)]
-        metadatas.extend(record_metadatas)
-        # if we have reached the batch_limit we can add texts
-        if len(texts) >= batch_limit:
-            ids = [str(uuid4()) for _ in range(len(texts))]
-            embeds = embedding.embed_documents(texts)
-            index.upsert(vectors=zip(ids, embeds, metadatas))
-            texts = []
-            metadatas = []
+def run_llm_rag_cai(texts, user_query):
+    llm = OpenAI()
+    llm_response = create_index_store(docs, query)
+    print(llm_response['result'])
+    cai_response = get_cai_response(llm, llm_response['result'])
+    compare_sts_cos_cai_rag_results(texts, user_query, llm_response['result'], cai_response, 'pinecone')
 
 
 def create_index_store(docs, query):
@@ -123,9 +79,9 @@ def create_index_store(docs, query):
     qa_with_sources = RetrievalQA.from_chain_type(
         llm=OpenAI(),
         chain_type="stuff",
-        retriever=vectorstore.as_retriever()
+        retriever=vectorstore.as_retriever(search_type="mmr", search_kwargs={'k': 1, 'score_threshold': 0.3}, return_source_documents=True)
     )
-    print(qa_with_sources(query))
+    return qa_with_sources(query)
 
 
 if __name__ == "__main__":
@@ -135,6 +91,5 @@ if __name__ == "__main__":
     valid_dataset = dataset.data['valid']
     docs = train_dataset[0][1]
     docs = docs.as_py()
-    query = "What did 30 years old do?"
-    create_index_store(docs, query)
-    # run_llm_rag_cai(docs, query)
+    query = "Why was I disappointed When I weighed myself as normal on Monday?"
+    run_llm_rag_cai(docs, query)

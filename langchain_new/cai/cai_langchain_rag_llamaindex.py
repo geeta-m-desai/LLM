@@ -60,12 +60,12 @@ def run_llm_rag_cai(text, user_query):
     #                                         return_source_documents=True))
     # llm_response = (qa_chain(user_query))
     llm_response = {'results': str(response)}
-    print(llm_response)
+    print("QA Response ... ", llm_response)
 
     cai_response = get_cai_response(llm, llm_response['results'])
     print(cai_response)
     # cai_response = get_cai_response(llm, llm_response['results'])
-    compare_sts_cos_cai_rag_results(text, user_query, llm_response['results'], cai_response,"llamaindex")
+    compare_sts_cos_cai_rag_results(text, user_query, llm_response['results'], cai_response, "llamaindex")
 
 
 if __name__ == "__main__":
@@ -75,6 +75,5 @@ if __name__ == "__main__":
     valid_dataset = dataset.data['valid']
     docs = train_dataset[0][1]
     docs = docs.as_py()
-
-    query = "What did 30 years old do?"
+    query = "How is the president of Bhutan?"
     run_llm_rag_cai(docs, query)

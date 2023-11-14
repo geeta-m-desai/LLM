@@ -7,7 +7,7 @@ from langchain.llms import OpenAI
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
-from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_results, write_file
+from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_results, write_file, calculate_rouge_score
 
 load_dotenv()
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -28,6 +28,7 @@ def run_llm_sum_cai(text):
     cai_response = get_cai_response(llm, sum_text)
     final_cai_outcome = compare_sts_cos_cai_results(sum_text, cai_response)
     write_file(texts, sum_text, final_cai_outcome)
+    # calculate_rouge(sum_text, final_cai_outcome)
     # return compare_sts_cos_cai_results(sum_text, cai_response)
 
 

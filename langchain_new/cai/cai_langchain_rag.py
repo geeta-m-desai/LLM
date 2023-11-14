@@ -5,8 +5,7 @@ from langchain.llms import OpenAI
 from langchain.schema import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
-
-from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_results
+from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_rag_results
 
 """## Load multiple and process documents"""
 import os
@@ -29,14 +28,13 @@ def run_llm_rag_cai(text, user_query):
     retriever = vectordb.as_retriever(search_kwargs={"k": 2})
     llm = OpenAI()
     qa_chain = (RetrievalQA.from_chain_type(llm=llm,
-                 chain_type="stuff",
-                 retriever=retriever,
-                 return_source_documents=True))
+                                            chain_type="stuff",
+                                            retriever=retriever,
+                                            return_source_documents=True))
     llm_response = (qa_chain(user_query))
     print(llm_response)
     cai_response = get_cai_response(llm, llm_response['result'])
-    final_cai_outcome = compare_sts_cos_cai_results(llm_response['result'], cai_response)
-    print(final_cai_outcome)
+    compare_sts_cos_cai_rag_results(texts, query, llm_response['result'], cai_response,"similarity")
 
 
 if __name__ == "__main__":
