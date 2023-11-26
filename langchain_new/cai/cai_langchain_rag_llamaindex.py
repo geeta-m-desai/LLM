@@ -1,13 +1,24 @@
+import pandas as pd
 import tiktoken
 from datasets import load_dataset
 from langchain.chains import RetrievalQA
 from langchain.llms import OpenAI
-from llama_index import ServiceContext, OpenAIEmbedding, PromptHelper
+from llama_index import ServiceContext, OpenAIEmbedding, PromptHelper, StorageContext, load_index_from_storage
 from llama_index import VectorStoreIndex, SimpleDirectoryReader
 from llama_index.node_parser import SimpleNodeParser
 from llama_index.text_splitter import TokenTextSplitter
 
-from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_rag_results
+from langchain_new.cai.utils import get_cai_response, compare_sts_cos_cai_rag_results, chain_of_verification, query_llm
+from pathlib import Path
+from llama_index import download_loader
+
+from llama_index.indices.vector_store.retrievers.retriever import VectorIndexRetriever
+
+from llama_index.response_synthesizers.factory import get_response_synthesizer
+
+from llama_index.query_engine.retriever_query_engine import RetrieverQueryEngine
+
+from llama_index.indices.postprocessor.node import SimilarityPostprocessor
 
 """## Load multiple and process documents"""
 import os
@@ -42,16 +53,61 @@ def run_llm_rag_cai(text, user_query):
         llm=llm,
         embed_model=embed_model,
         node_parser=node_parser,
-        prompt_helper=prompt_helper
+        prompt_helper=prompt_helper,
+
     )
 
-    documents = SimpleDirectoryReader(input_dir='data').load_data()
+    # documents = SimpleDirectoryReader(input_dir='data').load_data()
+    PandasCSVReader = download_loader("PandasCSVReader")
+    #
+    loader = PandasCSVReader()
+    documents = loader.load_data(file=Path('questions-llama.csv'))
+    storage_context = StorageContext.from_defaults(persist_dir='storage')
     index = VectorStoreIndex.from_documents(
         documents,
-        service_context=service_context
+        service_context=service_context,
+        storage_context=storage_context,
+
     )
-    index.storage_context.persist()
-    response = index.as_query_engine().query(query)
+    index.set_index_id("rag-cai-index")
+    # rebuild storage context
+
+    # load index
+    # index = load_index_from_storage(storage_context,index_id="rag-cai-index")
+    # if index:
+    #     print("Index found")
+    # index.storage_context.persist()
+    # if VectorStoreIndex.index_id != "rag-cai-index":
+    #     index = VectorStoreIndex.from_documents(
+    #         documents,
+    #         service_context=service_context
+    #     )
+    #     index.storage_context.persist()
+    #     index.set_index_id("rag-cai-index")
+    # else:
+    #     print("index already created")
+    #     index = VectorStoreIndex.index_id
+
+    # response = index.as_query_engine(similarity_top_k=3).query(user_query)
+    retriever = VectorIndexRetriever(
+        index=index,
+        similarity_top_k=1,
+    )
+
+    # Configure response synthesizer
+    response_synthesizer = get_response_synthesizer()
+
+    # Assemble query engine with postprocessors
+    query_engine = RetrieverQueryEngine(
+        retriever=retriever,
+        response_synthesizer=response_synthesizer,
+        node_postprocessors=[
+            SimilarityPostprocessor(similarity_cutoff=0.8)
+        ]
+    )
+
+    # Execute the query
+    response = query_engine.query(user_query)
     # retriever = index.as_retriever()
     # llm = OpenAI()
     # qa_chain = (RetrievalQA.from_chain_type(llm=llm,
@@ -60,20 +116,29 @@ def run_llm_rag_cai(text, user_query):
     #                                         return_source_documents=True))
     # llm_response = (qa_chain(user_query))
     llm_response = {'results': str(response)}
-    print("QA Response ... ", llm_response)
+    # print("QA Response ... ", llm_response)
 
-    cai_response = get_cai_response(llm, llm_response['results'])
-    print(cai_response)
-    # cai_response = get_cai_response(llm, llm_response['results'])
-    compare_sts_cos_cai_rag_results(text, user_query, llm_response['results'], cai_response, "llamaindex")
+    # Get sources
+    # print(response.source_nodes)
+    print("Formatted Response \n ", response.get_formatted_sources())
+    if str(response) == 'Empty Response':
+        cai_response = (get_cai_response(llm, user_query))
+        compare_sts_cos_cai_rag_results(text, user_query,
+                                        "This is generic answer as relevant information could not be obtained. " +
+                                        llm_response['results'], cai_response, 'llamaindex')
+
+    else:
+        cai_response = get_cai_response(llm, llm_response['results'])
+        print(cai_response)
+        # cai_response = get_cai_response(llm, llm_response['results'])
+        compare_sts_cos_cai_rag_results(text, user_query, llm_response['results'], cai_response, "llamaindex")
 
 
 if __name__ == "__main__":
-    dataset = load_dataset("CarperAI/openai_summarize_tldr")
-    train_dataset = dataset.data['train']
-    test_dataset = dataset.data['test']
-    valid_dataset = dataset.data['valid']
-    docs = train_dataset[0][1]
-    docs = docs.as_py()
-    query = "How is the president of Bhutan?"
-    run_llm_rag_cai(docs, query)
+    quest_lst = pd.read_csv("questions.csv")
+    print("quest", quest_lst['orig_text'][24], "\n", quest_lst['quest_text'][24])
+
+    run_llm_rag_cai(quest_lst['orig_text'][24], quest_lst['quest_text'][24])
+
+    # for i in range(1, 300):
+    #     run_llm_rag_cai(quest_lst['orig_text'][i], quest_lst['quest_text'][i])
