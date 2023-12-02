@@ -62,14 +62,14 @@ def run_llm_rag_cai(text, user_query):
     #
     loader = PandasCSVReader()
     documents = loader.load_data(file=Path('questions-llama.csv'))
-    storage_context = StorageContext.from_defaults(persist_dir='storage')
+    #storage_context = StorageContext.from_defaults(persist_dir='storage')
     index = VectorStoreIndex.from_documents(
         documents,
         service_context=service_context,
-        storage_context=storage_context,
+        #storage_context=storage_context,
 
     )
-    index.set_index_id("rag-cai-index")
+    # index.set_index_id("rag-cai-index")
     # rebuild storage context
 
     # load index
@@ -102,7 +102,7 @@ def run_llm_rag_cai(text, user_query):
         retriever=retriever,
         response_synthesizer=response_synthesizer,
         node_postprocessors=[
-            SimilarityPostprocessor(similarity_cutoff=0.8)
+            SimilarityPostprocessor(similarity_cutoff=0.5)
         ]
     )
 
@@ -136,9 +136,9 @@ def run_llm_rag_cai(text, user_query):
 
 if __name__ == "__main__":
     quest_lst = pd.read_csv("questions.csv")
-    print("quest", quest_lst['orig_text'][24], "\n", quest_lst['quest_text'][24])
+    # print("quest", quest_lst['orig_text'][24], "\n", quest_lst['quest_text'][24])
+    #
+    run_llm_rag_cai(quest_lst['orig_text'][38], quest_lst['quest_text'][38])
 
-    run_llm_rag_cai(quest_lst['orig_text'][24], quest_lst['quest_text'][24])
-
-    # for i in range(1, 300):
+    # for i in range(100, 200):
     #     run_llm_rag_cai(quest_lst['orig_text'][i], quest_lst['quest_text'][i])
