@@ -1,0 +1,16 @@
+orig_text,query,qa_result_text,cai_sum_text,sts_score_output,cos_sim_score_output,rouge_score_output,bert_score_output,type
+"SUBREDDIT: r/relationship_advice
+TITLE: How to deal with questioning everything?
+POST: 23/f here and SO is 26/m. Together for 1.5 yrs and living together for 5 months.
+
+My sister just recently got married and I can't tell if the thoughts I am having are because I'm imaging their relationship to be something it isn't or if I'm in a LTR with someone that is really not suited for me in the long term.
+
+Their relationship is a seeming fairytale: they met, moved in together in a house he already owned, everything is neat and organized, they have a beautiful dog, great friends and love each other deeply. Her husband is very dependable and sweet.
+
+This is not to say my relationship is horrible. My boyfriend is loving, kind and has always been there for me. We have disappeared into our relationship though - we don't really have a friend group. Both of us are at miserable minimum wage jobs trying to fund a move out of the town we went to school in. He's only interested in moving certain places but really doesn't have a plan for the future. He's never missed a bill payment or anything - but our life is not stable financially. I'm currently attempting to go back to school/send out resumes.
+
+Sometimes I think I can marry him. He is amazing but does have a serious flaw when it comes to drinking. I've had to give him an ultimatum if he comes back home drunk and angry for the final time - it's over. I can't raise children with someone like that. So far he's been fine, no slip ups..but I constantly worry about him and I hate that.
+So I was sitting there looking at my sister and couldn't help but think - should I aim for that kind of relationship? Am I over-thinking mine? If he purposes (as he's hinted), would I regret saying yes? Am I still just naive and thinking that not everyone has issues and really ours aren't that bad?
+
+I feel bad for having these thoughts, but at the same time I don't know what to do about them. I know my life is in a transitional phase and maybe I'm yearning for some stability..but I just don't know what to do?
+TL;DR: ", How have you addressed your concerns about your partner's drinking with him,"I have expressed my concerns about my partner's drinking with him by having an open and honest conversation. I have shared how his behavior at the party made me and others uncomfortable, and explained that his comments and actions were not appropriate for the setting. I have also mentioned that his texts have been pushy and that I would prefer some distance. I have tried to communicate my feelings without being too harsh, as I don't want to hurt his feelings too much.",Seek professional help from a therapist or addiction specialist to find an appropriate way to discuss the situation and its potential consequences.,0.95544726,0.98267424,0.9545454545454546,0.9918274879455566,llamaindex
