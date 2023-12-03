@@ -1,0 +1,5 @@
+https://medium.aiplanet.com/advanced-rag-improving-retrieval-using-hypothetical-document-embeddings-hyde-1421a8ec075a - HyDE
+
+https://medium.com/@jeffreyip54/why-we-replaced-pinecone-with-pgvector-2f679d253eba - PgVector versus Pinecone?
+
+https://artificialcorner.com/re-ranking-is-all-you-need-7a6b1e586d48 - RE Ranker for RAG
