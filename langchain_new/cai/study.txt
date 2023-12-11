@@ -5,3 +5,5 @@ https://medium.com/@jeffreyip54/why-we-replaced-pinecone-with-pgvector-2f679d253
 https://artificialcorner.com/re-ranking-is-all-you-need-7a6b1e586d48 - RE Ranker for RAG
 
 https://medium.aiplanet.com/implementing-rag-pipeline-using-genai-stack-42ceec424eac - Gen AI Stack
+
+https://medium.com/@alcarazanthony1/applying-large-language-models-to-graph-structured-data-a-new-frontier-for-ai-a-review-of-jin-et-a2f2976a236e - Arxiv paper for connecting linguistics and graphs with knowledge graphs
