@@ -7,3 +7,6 @@ https://artificialcorner.com/re-ranking-is-all-you-need-7a6b1e586d48 - RE Ranker
 https://medium.aiplanet.com/implementing-rag-pipeline-using-genai-stack-42ceec424eac - Gen AI Stack
 
 https://medium.com/@alcarazanthony1/applying-large-language-models-to-graph-structured-data-a-new-frontier-for-ai-a-review-of-jin-et-a2f2976a236e - Arxiv paper for connecting linguistics and graphs with knowledge graphs
+
+https://levelup.gitconnected.com/autogen-langchian-rag-function-call-super-ai-chabot-3951911607f2
+https://medium.com/@jaswanth04/streaming-llm-responses-using-fastapi-deb575554397
