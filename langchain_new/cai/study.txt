@@ -11,3 +11,4 @@ https://medium.com/@alcarazanthony1/applying-large-language-models-to-graph-stru
 https://levelup.gitconnected.com/autogen-langchian-rag-function-call-super-ai-chabot-3951911607f2
 https://medium.com/@jaswanth04/streaming-llm-responses-using-fastapi-deb575554397
 https://github.com/potsawee/selfcheckgpt "SelfCheckGPT: Zero-Resource Black-Box Hallucination Detection for Generative Large Language Models"
+https://cobusgreyling.medium.com/an-overview-of-the-voicebot-conversational-ai-landscape-a3741a2728f8 - Conversational AI landscape and framework comparison
